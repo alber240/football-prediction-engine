@@ -130,3 +130,62 @@ async def get_match_analysis(match_id: int):
         return analysis
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# Add these imports at the top
+from app.services.news_service import FootballNewsService
+from app.services.accuracy_service import AccuracyService
+
+# Add these endpoints after the existing ones
+
+# News endpoints
+@router.get("/news")
+async def get_news(limit: int = 20):
+    """Get latest football news"""
+    try:
+        news_service = FootballNewsService()
+        news = news_service.get_news(limit)
+        return news
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/news/fetch")
+async def fetch_news():
+    """Fetch and store latest football news"""
+    try:
+        news_service = FootballNewsService()
+        news = news_service.fetch_and_store_news()
+        return {"message": f"Fetched {len(news)} news articles", "news": news}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Accuracy endpoints
+@router.get("/accuracy/daily/{date}")
+async def get_daily_accuracy(date: str):
+    """Get daily prediction accuracy"""
+    try:
+        accuracy_service = AccuracyService()
+        result = accuracy_service.calculate_daily_accuracy(date)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/accuracy/league/{league_id}")
+async def get_league_accuracy(league_id: int):
+    """Get league accuracy"""
+    try:
+        accuracy_service = AccuracyService()
+        result = accuracy_service.get_league_accuracy(league_id)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/accuracy/match/{match_id}")
+async def check_match_accuracy(match_id: int):
+    """Check if a specific prediction was correct"""
+    try:
+        accuracy_service = AccuracyService()
+        result = accuracy_service.check_prediction_accuracy(match_id)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -8,3 +8,5 @@ requests==2.31.0
 numpy
 scipy
 pandas
+feedparser
+beautifulsoup4
