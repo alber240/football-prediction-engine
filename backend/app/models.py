@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, DECIMAL, Boolean, Text, CHAR
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, DECIMAL, Boolean, Text, CHAR, JSONB
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from datetime import datetime
@@ -33,7 +33,6 @@ class Team(Base):
     elo_rating = Column(DECIMAL(10, 2), default=1500.00)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-# Add this after the Team model
 class Player(Base):
     __tablename__ = "players"
     id = Column(Integer, primary_key=True, index=True)
@@ -53,7 +52,6 @@ class Player(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-
 class Match(Base):
     __tablename__ = "matches"
     id = Column(Integer, primary_key=True, index=True)
@@ -70,6 +68,21 @@ class Match(Base):
     away_score = Column(Integer)
     result = Column(CHAR(1))
     is_midweek = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class OurPrediction(Base):
+    __tablename__ = "our_predictions"
+    id = Column(Integer, primary_key=True, index=True)
+    match_id = Column(Integer, ForeignKey("matches.id"), unique=True)
+    home_prob = Column(DECIMAL(6,5))
+    draw_prob = Column(DECIMAL(6,5))
+    away_prob = Column(DECIMAL(6,5))
+    over_25_prob = Column(DECIMAL(6,5))
+    under_25_prob = Column(DECIMAL(6,5))
+    exact_scores = Column(JSONB)
+    confidence_score = Column(DECIMAL(5,4))
+    model_version = Column(String(20))
+    explanation = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 def get_db():
