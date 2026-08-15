@@ -4,12 +4,12 @@ Football News Service - Fetches daily football news
 
 import requests
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 from typing import List, Dict
-from bs4 import BeautifulSoup
 import feedparser
-from app.models import get_db, text
+from sqlalchemy import text
+from app.models import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -17,15 +17,13 @@ class FootballNewsService:
     def __init__(self):
         self.api_key = os.getenv("NEWS_API_KEY")
         self.db = next(get_db())
-        
+    
     def fetch_and_store_news(self) -> List[Dict]:
-        """Fetch news and store in database"""
         all_news = self.fetch_football_news()
-        
         stored = 0
+        
         for news in all_news:
             try:
-                # Check if already exists
                 existing = self.db.execute(
                     text("SELECT id FROM football_news WHERE url = :url"),
                     {"url": news['url']}
@@ -48,28 +46,22 @@ class FootballNewsService:
         return all_news[:20]
     
     def fetch_football_news(self) -> List[Dict]:
-        """Fetch football news from multiple sources"""
         all_news = []
         
-        # Source 1: NewsAPI (if key available)
         if self.api_key:
             newsapi_news = self._fetch_from_newsapi()
             all_news.extend(newsapi_news)
         
-        # Source 2: BBC Sport RSS
         bbc_news = self._fetch_from_bbc()
         all_news.extend(bbc_news)
         
-        # Source 3: Sky Sports RSS
         sky_news = self._fetch_from_sky()
         all_news.extend(sky_news)
         
-        # Sort by date
         all_news.sort(key=lambda x: x['published_at'], reverse=True)
         return all_news[:30]
     
     def _fetch_from_newsapi(self) -> List[Dict]:
-        """Fetch from NewsAPI"""
         if not self.api_key:
             return []
             
@@ -106,7 +98,6 @@ class FootballNewsService:
         return []
     
     def _fetch_from_bbc(self) -> List[Dict]:
-        """Fetch from BBC Sport RSS"""
         try:
             feed = feedparser.parse('http://feeds.bbci.co.uk/sport/football/rss.xml')
             news = []
@@ -126,7 +117,6 @@ class FootballNewsService:
         return []
     
     def _fetch_from_sky(self) -> List[Dict]:
-        """Fetch from Sky Sports RSS"""
         try:
             feed = feedparser.parse('https://www.skysports.com/rss/12040')
             news = []
@@ -146,7 +136,6 @@ class FootballNewsService:
         return []
     
     def get_news(self, limit: int = 20) -> List[Dict]:
-        """Get news from database"""
         result = self.db.execute(
             text("""
             SELECT * FROM football_news
