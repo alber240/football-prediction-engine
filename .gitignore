@@ -1,0 +1,23 @@
+# Node modules - EXCLUDE THESE
+node_modules/
+.next/
+out/
+dist/
+build/
+*.lock
+package-lock.json
+yarn.lock
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+.env
+*.log
+models/
+data/
+mlruns/
