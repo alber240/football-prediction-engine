@@ -79,7 +79,7 @@ class OurPrediction(Base):
     away_prob = Column(DECIMAL(6,5))
     over_25_prob = Column(DECIMAL(6,5))
     under_25_prob = Column(DECIMAL(6,5))
-    exact_scores = Column(JSONB)
+    exact_scores = Column(JSON)
     confidence_score = Column(DECIMAL(5,4))
     model_version = Column(String(20))
     explanation = Column(Text)
