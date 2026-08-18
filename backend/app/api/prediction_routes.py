@@ -189,3 +189,46 @@ async def check_match_accuracy(match_id: int):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/fixtures/{league_id}")
+async def get_league_fixtures(league_id: int):
+    """Get all fixtures for a specific league"""
+    try:
+        db = next(get_db())
+        
+        # Get league
+        league = db.query(League).filter_by(id=league_id).first()
+        if not league:
+            raise HTTPException(status_code=404, detail="League not found")
+        
+        # Get all matches for this league
+        matches = db.query(Match).filter_by(league_id=league_id).order_by(Match.match_date).all()
+        
+        fixtures = []
+        for match in matches:
+            home_team = db.query(Team).filter_by(id=match.home_team_id).first()
+            away_team = db.query(Team).filter_by(id=match.away_team_id).first()
+            
+            # Check if prediction exists
+            prediction = db.query(OurPrediction).filter_by(match_id=match.id).first()
+            
+            fixtures.append({
+                'id': match.id,
+                'home_team': home_team.name if home_team else 'Unknown',
+                'away_team': away_team.name if away_team else 'Unknown',
+                'match_date': match.match_date.isoformat(),
+                'venue': match.venue,
+                'status': match.status,
+                'home_score': match.home_score,
+                'away_score': match.away_score,
+                'has_prediction': prediction is not None,
+                'prediction_available': prediction is not None and match.status in ['NS', 'TBD']
+            })
+        
+        return {
+            'league': league.name,
+            'league_id': league.id,
+            'fixtures': fixtures
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
